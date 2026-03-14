@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linguist-OS | AI Language Tutor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f0f1a;
+            --sidebar-bg: #12122a;
+            --card-bg: #1a1a2e;
+            --border: #2a2a4a;
+            --primary: #7c83fd;
+            --success: #66bb6a;
+            --warning: #ffa726;
+            --error: #ef5350;
+            --text: #e0e0e0;
+            --text-dim: #8888aa;
+            --text-bright: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border);
+            height: 56px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            font-size: 24px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 1px;
+        }
+
+        .health-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        /* ── MAIN LAYOUT ───────────────────────── */
+        .main {
+            display: flex;
+            height: calc(100vh - 56px);
+        }
+
+        /* ── SIDEBAR ────────────────────────────── */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .sidebar-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-bright);
+        }
+
+        /* Mastery bars */
+        .mastery-item {
+            margin-bottom: 10px;
+        }
+
+        .mastery-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 4px;
+            color: var(--text-dim);
+        }
+
+        .mastery-bar-bg {
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .mastery-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease, background 0.5s ease;
+        }
+
+        /* Audit report */
+        .audit-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-lesson { background: rgba(239,83,80,0.15); color: var(--error); }
+        .badge-soft { background: rgba(255,167,38,0.15); color: var(--warning); }
+        .badge-conversation { background: rgba(102,187,106,0.15); color: var(--success); }
+        .badge-clean { background: rgba(102,187,106,0.15); color: var(--success); }
+        .badge-minor { background: rgba(255,167,38,0.15); color: var(--warning); }
+        .badge-moderate { background: rgba(255,167,38,0.15); color: var(--warning); }
+        .badge-critical { background: rgba(239,83,80,0.15); color: var(--error); }
+        .badge-repeated { background: rgba(239,83,80,0.15); color: var(--error); }
+
+        .audit-score {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .audit-summary {
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .audit-analysis {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* Prescription queue */
+        .prescription-item {
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            background: var(--bg);
+            font-size: 12px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .prescription-item.urgent { border-left-color: var(--error); }
+        .prescription-item.high { border-left-color: var(--warning); }
+        .prescription-item.medium { border-left-color: var(--primary); }
+
+        .prescription-priority {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .prescription-priority.urgent { color: var(--error); }
+        .prescription-priority.high { color: var(--warning); }
+        .prescription-priority.medium { color: var(--primary); }
+
+        .prescription-concept {
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .prescription-reason {
+            color: var(--text-dim);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        /* Recent mistakes */
+        .mistake-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .mistake-item:last-child {
+            border-bottom: none;
+        }
+
+        .mistake-wrong {
+            color: var(--error);
+            text-decoration: line-through;
+        }
+
+        .mistake-arrow {
+            color: var(--text-dim);
+            margin: 0 4px;
+        }
+
+        .mistake-correct {
+            color: var(--success);
+        }
+
+        .mistake-rule {
+            display: block;
+            font-size: 10px;
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 12px;
+        }
+
+        /* ── CHAT AREA ──────────────────────────── */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Welcome screen */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 32px;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        .welcome-examples {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .example-btn {
+            padding: 12px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .example-btn:hover {
+            border-color: var(--primary);
+            background: rgba(124, 131, 253, 0.08);
+        }
+
+        /* Message bubbles */
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+        }
+
+        .message-wrapper.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message-wrapper.tutor {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .mode-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .mode-lesson {
+            background: rgba(239,83,80,0.15);
+            color: var(--error);
+        }
+
+        .mode-soft_correction {
+            background: rgba(255,167,38,0.15);
+            color: var(--warning);
+        }
+
+        .mode-conversation {
+            background: rgba(102,187,106,0.15);
+            color: var(--success);
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message-wrapper.user .message-bubble {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-wrapper.tutor .message-bubble {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .vocab-tip {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(124, 131, 253, 0.08);
+            border: 1px solid rgba(124, 131, 253, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* ── INPUT AREA ─────────────────────────── */
+        .input-area {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--sidebar-bg);
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            line-height: 1.4;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-area textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .input-area textarea::placeholder {
+            color: var(--text-dim);
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, transform 0.1s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            opacity: 0.9;
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── RESPONSIVE ─────────────────────────── */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-left">
+        <span class="header-logo">&#127758;</span>
+        <div>
+            <div class="header-title">Linguist-OS</div>
+            <div class="header-subtitle">AI-Powered Language Tutor</div>
+        </div>
+    </div>
+    <div class="health-badge" id="healthBadge">
+        <span class="health-dot" id="healthDot"></span>
+        <span id="healthText">Score: --</span>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <!-- Mastery Scores -->
+        <div class="sidebar-section">
+            <h3>&#128202; Mastery Scores</h3>
+            <div id="masteryContainer">
+                <div class="empty-state">Send a message to begin</div>
+            </div>
+        </div>
+
+        <!-- Last Audit Report -->
+        <div class="sidebar-section">
+            <h3>&#128270; Last Audit Report</h3>
+            <div id="auditContainer">
+                <div class="empty-state">No audit yet</div>
+            </div>
+        </div>
+
+        <!-- Prescription Queue -->
+        <div class="sidebar-section">
+            <h3>&#128203; Prescription Queue</h3>
+            <div id="prescriptionContainer">
+                <div class="empty-state">No prescriptions</div>
+            </div>
+        </div>
+
+        <!-- Recent Mistakes -->
+        <div class="sidebar-section">
+            <h3>&#10060; Recent Mistakes</h3>
+            <div id="mistakesContainer">
+                <div class="empty-state">No mistakes recorded</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+
+        <div class="chat-messages" id="chatMessages">
+
+            <!-- Welcome Screen -->
+            <div class="welcome" id="welcomeScreen">
+                <div class="welcome-emoji">&#128075;</div>
+                <div class="welcome-title">Hello, I'm Ling!</div>
+                <div class="welcome-subtitle">
+                    Your AI English language tutor. Type anything in English and I'll help you improve your grammar, vocabulary, and fluency in real-time.
+                </div>
+                <div class="welcome-examples">
+                    <button class="example-btn" onclick="sendExample('Yesterday I have went to the market.')">
+                        "Yesterday I have went to the market."
+                    </button>
+                    <button class="example-btn" onclick="sendExample('I am very tire from the work today.')">
+                        "I am very tire from the work today."
+                    </button>
+                    <button class="example-btn" onclick="sendExample('She don\'t know the answer.')">
+                        "She don't know the answer."
+                    </button>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <textarea
+                id="messageInput"
+                placeholder="Type in English and I'll help you improve..."
+                rows="1"
+                onkeydown="handleKeyDown(event)"
+                oninput="autoResize(this)"
+            ></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── CONFIGURATION ─────────────────────────────────
+const API_URL = window.location.origin;
+const USER_ID = "student_" + Math.floor(Math.random() * 9999);
+
+let isWelcomeVisible = true;
+let isSending = false;
+
+// ── SEND MESSAGE ──────────────────────────────────
+async function sendMessage() {
+    /**
+     * POST the user's message to /api/chat, display the response,
+     * and update all sidebar panels.
+     *
+     * Example:
+     *   sendMessage() // reads from textarea, sends to API
+     */
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
+    if (!text || isSending) return;
+
+    isSending = true;
+    document.getElementById("sendBtn").disabled = true;
+
+    // Hide welcome
+    if (isWelcomeVisible) {
+        document.getElementById("welcomeScreen").style.display = "none";
+        isWelcomeVisible = false;
+    }
+
+    // Add user message
+    addMessage("user", text);
+    input.value = "";
+    autoResize(input);
+
+    // Show typing
+    showTyping(true);
+
+    try {
+        const resp = await fetch(API_URL + "/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: USER_ID, message: text }),
+        });
+
+        const data = await resp.json();
+
+        showTyping(false);
+
+        // Add tutor message
+        addMessage("tutor", data.reply, data);
+
+        // Update sidebar
+        updateHealth(data.overall_score);
+        renderAuditReport(data);
+        renderPrescriptions(data.prescription_stack || []);
+
+        // Update grammar errors as mistakes
+        if (data.grammar_errors && data.grammar_errors.length > 0) {
+            renderMistakes(data.grammar_errors);
+        }
+
+        // Load full profile (mastery)
+        loadProfile();
+
+    } catch (err) {
+        showTyping(false);
+        addMessage("tutor", "Sorry, I had trouble connecting. Please try again!", {
+            verdict: "conversation"
+        });
+        console.error("Chat error:", err);
+    }
+
+    isSending = false;
+    document.getElementById("sendBtn").disabled = false;
+    input.focus();
+}
+
+// ── ADD MESSAGE BUBBLE ────────────────────────────
+function addMessage(role, text, data) {
+    /**
+     * Create and append a message bubble to the chat area.
+     *
+     * Example:
+     *   addMessage("user", "Hello there!")
+     *   addMessage("tutor", "Hi!", { verdict: "conversation" })
+     */
+    const container = document.getElementById("chatMessages");
+    const typing = document.getElementById("typingIndicator");
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "message-wrapper " + role;
+
+    if (role === "tutor" && data && data.verdict) {
+        const modeBadge = document.createElement("div");
+        modeBadge.className = "mode-badge mode-" + data.verdict;
+        if (data.verdict === "lesson") {
+            modeBadge.textContent = "\uD83D\uDCDA Lesson Mode";
+        } else if (data.verdict === "soft_correction") {
+            modeBadge.textContent = "\u270F\uFE0F Correction";
+        } else {
+            modeBadge.textContent = "\uD83D\uDCAC Conversation";
+        }
+        wrapper.appendChild(modeBadge);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "message-bubble";
+    bubble.textContent = text;
+
+    // Vocab tip inside tutor bubbles
+    if (role === "tutor" && data && data.vocab_suggestions && data.vocab_suggestions.length > 0) {
+        const tip = data.vocab_suggestions[0];
+        if (tip.basic_word && tip.best_fit) {
+            const tipDiv = document.createElement("div");
+            tipDiv.className = "vocab-tip";
+            tipDiv.textContent = "\uD83D\uDCA1 Try '" + tip.best_fit + "' instead of '" + tip.basic_word + "'";
+            bubble.appendChild(tipDiv);
+        }
+    }
+
+    wrapper.appendChild(bubble);
+
+    // Insert before typing indicator
+    container.insertBefore(wrapper, typing);
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+// ── TYPING INDICATOR ──────────────────────────────
+function showTyping(visible) {
+    /**
+     * Show or hide the typing indicator (3 animated dots).
+     *
+     * Example:
+     *   showTyping(true)  // show dots
+     *   showTyping(false) // hide dots
+     */
+    const el = document.getElementById("typingIndicator");
+    if (visible) {
+        el.classList.add("visible");
+    } else {
+        el.classList.remove("visible");
+    }
+    const container = document.getElementById("chatMessages");
+    container.scrollTop = container.scrollHeight;
+}
+
+// ── UPDATE HEALTH BADGE ───────────────────────────
+function updateHealth(score) {
+    /**
+     * Update the health score badge in the header with color coding.
+     * Green >= 0.7, orange >= 0.4, red < 0.4.
+     *
+     * Example:
+     *   updateHealth(0.85) // green dot, "Score: 85%"
+     */
+    const dot = document.getElementById("healthDot");
+    const text = document.getElementById("healthText");
+    const pct = Math.round((score || 0) * 100);
+    text.textContent = "Score: " + pct + "%";
+
+    if (score >= 0.7) {
+        dot.style.background = "var(--success)";
+    } else if (score >= 0.4) {
+        dot.style.background = "var(--warning)";
+    } else {
+        dot.style.background = "var(--error)";
+    }
+}
+
+// ── RENDER MASTERY BARS ───────────────────────────
+function renderMastery(mastery) {
+    /**
+     * Render progress bars for each concept in the mastery sidebar.
+     * Bar color: red if <40%, orange if <70%, green if >=70%.
+     *
+     * Example:
+     *   renderMastery({ past_simple: 0.5, articles: 0.8 })
+     */
+    const container = document.getElementById("masteryContainer");
+    if (!mastery || Object.keys(mastery).length === 0) {
+        container.innerHTML = '<div class="empty-state">Send a message to begin</div>';
+        return;
+    }
+
+    const labels = {
+        past_simple: "Past Simple",
+        present_perfect: "Present Perfect",
+        articles: "Articles",
+        prepositions: "Prepositions",
+        vocabulary: "Vocabulary",
+        subject_verb_agreement: "Subject-Verb",
+        irregular_verbs: "Irregular Verbs"
+    };
+
+    let html = "";
+    for (const [key, value] of Object.entries(mastery)) {
+        const pct = Math.round(value * 100);
+        let color = "var(--success)";
+        if (pct < 40) color = "var(--error)";
+        else if (pct < 70) color = "var(--warning)";
+
+        const label = labels[key] || key.replace(/_/g, " ");
+        html += '<div class="mastery-item">';
+        html += '<div class="mastery-label"><span>' + label + '</span><span>' + pct + '%</span></div>';
+        html += '<div class="mastery-bar-bg"><div class="mastery-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// ── RENDER AUDIT REPORT ───────────────────────────
+function renderAuditReport(data) {
+    /**
+     * Render the last audit report card in the sidebar.
+     * Shows verdict badge, severity, score, summary, analysis.
+     *
+     * Example:
+     *   renderAuditReport({ verdict: "lesson", severity: "critical", overall_score: 0.45, ... })
+     */
+    const container = document.getElementById("auditContainer");
+    if (!data) {
+        container.innerHTML = '<div class="empty-state">No audit yet</div>';
+        return;
+    }
+
+    const verdict = data.verdict || "conversation";
+    const severity = data.severity || "clean";
+    const score = Math.round((data.overall_score || 0) * 100);
+    const summary = data.audit_summary || "";
+    const recommendation = data.recommendation || "";
+
+    let verdictClass = "badge-conversation";
+    if (verdict === "lesson") verdictClass = "badge-lesson";
+    else if (verdict === "soft_correction") verdictClass = "badge-soft";
+
+    let severityClass = "badge-" + severity;
+
+    let html = '<div class="audit-badges">';
+    html += '<span class="badge ' + verdictClass + '">' + verdict.replace("_", " ") + '</span>';
+    html += '<span class="badge ' + severityClass + '">' + severity + '</span>';
+    html += '</div>';
+    html += '<div class="audit-score">' + score + '%</div>';
+    if (summary) html += '<div class="audit-summary">' + summary + '</div>';
+    if (recommendation) html += '<div class="audit-analysis">' + recommendation + '</div>';
+
+    container.innerHTML = html;
+}
+
+// ── RENDER PRESCRIPTIONS ──────────────────────────
+function renderPrescriptions(stack) {
+    /**
+     * Render the prescription queue in the sidebar.
+     * Color-coded by priority: urgent=red, high=orange, medium=purple.
+     *
+     * Example:
+     *   renderPrescriptions([{ priority: "urgent", concept: "past_simple", reason: "..." }])
+     */
+    const container = document.getElementById("prescriptionContainer");
+    if (!stack || stack.length === 0) {
+        container.innerHTML = '<div class="empty-state">No prescriptions</div>';
+        return;
+    }
+
+    let html = "";
+    for (const item of stack) {
+        const priority = item.priority || "medium";
+        html += '<div class="prescription-item ' + priority + '">';
+        html += '<div class="prescription-priority ' + priority + '">' + priority + '</div>';
+        html += '<div class="prescription-concept">' + (item.concept || "").replace(/_/g, " ") + '</div>';
+        if (item.reason) html += '<div class="prescription-reason">' + item.reason + '</div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// ── RENDER MISTAKES ───────────────────────────────
+function renderMistakes(mistakes) {
+    /**
+     * Render the last 5 mistakes in the sidebar.
+     * Shows wrong (red, strikethrough) -> correct (green) with rule in purple.
+     *
+     * Example:
+     *   renderMistakes([{ wrong: "have went", correct: "went", rule: "past_simple" }])
+     */
+    const container = document.getElementById("mistakesContainer");
+    if (!mistakes || mistakes.length === 0) {
+        container.innerHTML = '<div class="empty-state">No mistakes recorded</div>';
+        return;
+    }
+
+    // Keep only last 5
+    const recent = mistakes.slice(0, 5);
+    let html = "";
+    for (const m of recent) {
+        const wrong = m.wrong || m.wrong_part || "";
+        const correct = m.correct || m.correct_part || "";
+        const rule = m.rule || m.rule_broken || "";
+        html += '<div class="mistake-item">';
+        html += '<span class="mistake-wrong">' + wrong + '</span>';
+        html += '<span class="mistake-arrow"> &#8594; </span>';
+        html += '<span class="mistake-correct">' + correct + '</span>';
+        if (rule) html += '<span class="mistake-rule">' + rule.replace(/_/g, " ") + '</span>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// ── SEND EXAMPLE ──────────────────────────────────
+function sendExample(text) {
+    /**
+     * Populate the input with an example sentence and send it.
+     *
+     * Example:
+     *   sendExample("Yesterday I have went to the market.")
+     */
+    const input = document.getElementById("messageInput");
+    input.value = text;
+    autoResize(input);
+    sendMessage();
+}
+
+// ── LOAD PROFILE ──────────────────────────────────
+async function loadProfile() {
+    /**
+     * GET /api/user/{id}/profile and update mastery bars and mistakes.
+     *
+     * Example:
+     *   await loadProfile() // fetches and renders mastery scores
+     */
+    try {
+        const resp = await fetch(API_URL + "/api/user/" + USER_ID + "/profile");
+        const data = await resp.json();
+        if (data.mastery) {
+            renderMastery(data.mastery);
+        }
+        if (data.recent_mistakes && data.recent_mistakes.length > 0) {
+            renderMistakes(data.recent_mistakes);
+        }
+    } catch (err) {
+        console.error("Profile load error:", err);
+    }
+}
+
+// ── INPUT HELPERS ─────────────────────────────────
+function handleKeyDown(e) {
+    /**
+     * Handle keyboard events in the textarea.
+     * Enter = send, Shift+Enter = new line.
+     */
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function autoResize(el) {
+    /**
+     * Auto-resize the textarea based on content, max 120px.
+     */
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+}
+
+// ── INITIAL LOAD ──────────────────────────────────
+loadProfile();
+</script>
+
+</body>
+</html>
